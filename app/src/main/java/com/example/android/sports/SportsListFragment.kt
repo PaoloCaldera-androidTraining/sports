@@ -47,6 +47,10 @@ class SportsListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentSportsListBinding.bind(view)
+        val slidingPaneLayout = binding.slidingPaneLayout
+
+        // Ensure that the sliding pane layout does not switch pane with a swipe gesture
+        slidingPaneLayout.lockMode = SlidingPaneLayout.LOCK_MODE_LOCKED
 
         // Initialize the adapter and set it to the RecyclerView.
         val adapter = SportsAdapter {
@@ -54,13 +58,23 @@ class SportsListFragment : Fragment() {
             // This will automatically update the dual pane content
             sportsViewModel.updateCurrentSport(it)
             // Navigate to the details screen by using the SlidingPaneLayout
-            binding.slidingPaneLayout.openPane()
+            slidingPaneLayout.openPane()
         }
         binding.recyclerView.adapter = adapter
         adapter.submitList(sportsViewModel.sportsData)
+
+        // Connect the SlidingPaneLayout to the system back button for correct back navigation:
+        // if the back button is pressed when the current activity/fragment is in active state,
+        // then perform what is added in the Callback object added in addCallback()
+        requireActivity().onBackPressedDispatcher.addCallback(
+            // The lifecycle owner ensures that the callback is enabled only on STARTED and RESUMED states
+            viewLifecycleOwner,
+            // When the back button is pressed, the addCallback() method creates an instance of
+            // the indicated class and then calls the handleOnBackPressed() method
+            SportsListOnBackPressedCallback(slidingPaneLayout)
+        )
     }
 }
-
 
 
 /*  The class overrides the default behaviour of the back button, according to certain conditions
