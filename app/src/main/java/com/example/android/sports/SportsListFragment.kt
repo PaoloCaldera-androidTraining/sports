@@ -20,9 +20,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import com.example.android.sports.adapter.SportsAdapter
 import com.example.android.sports.databinding.FragmentSportsListBinding
 import com.example.android.sports.model.SportsViewModel
@@ -57,4 +59,43 @@ class SportsListFragment : Fragment() {
         binding.recyclerView.adapter = adapter
         adapter.submitList(sportsViewModel.sportsData)
     }
+}
+
+
+
+/*  The class overrides the default behaviour of the back button, according to certain conditions
+    When the boolean passed in input to the OnBackPressedCallback() class is true, the method
+    handleOnBackPressed() is called
+
+    slidingPaneLayout.isSlideable indicates whether the second pane is on a "small" screen or not,
+    in other words, if the layout displays a single pane at a time
+    slidingPaneLayout.isOpen indicates
+ */
+class SportsListOnBackPressedCallback(
+    private val slidingPaneLayout: SlidingPaneLayout
+) : OnBackPressedCallback(slidingPaneLayout.isSlideable && slidingPaneLayout.isOpen),
+    SlidingPaneLayout.PanelSlideListener {
+
+    // add the PanelSlideListener to the slidingPaneLayout in order to observe changes
+    // "this" identifies the listener of the interface/class that has been implemented
+    init {
+        slidingPaneLayout.addPanelSlideListener(this)
+    }
+
+    override fun handleOnBackPressed() {
+        // The openPane() and closePane() methods have only effect if only one pane at a time is visible
+        slidingPaneLayout.closePane()
+    }
+
+    override fun onPanelSlide(panel: View, slideOffset: Float) {
+    }
+
+    override fun onPanelOpened(panel: View) {
+        isEnabled = true
+    }
+
+    override fun onPanelClosed(panel: View) {
+        isEnabled = false
+    }
+
 }
